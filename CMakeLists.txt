@@ -1,7 +1,7 @@
 
 cmake_minimum_required(VERSION 3.17)
 
-project(perfetto_hpc LANGUAGES C CXX)
+project(perfetto_hpc LANGUAGES C CXX Fortran)
 
 include(cmake/CPM.cmake)
 
