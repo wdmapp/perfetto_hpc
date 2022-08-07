@@ -34,7 +34,7 @@ void initialize()
   track_event_cfg.add_enabled_categories("*");
 
   perfetto::TraceConfig cfg;
-  cfg.add_buffers()->set_size_kb(1024); // Record up to 1 MiB.
+  cfg.add_buffers()->set_size_kb(100 * 1024); // Record up to 100 MiB.
   auto* ds_cfg = cfg.add_data_sources()->mutable_config();
   ds_cfg->set_name("track_event");
   // ds_cfg->set_track_event_config_raw(track_event_cfg.SerializeAsString());
