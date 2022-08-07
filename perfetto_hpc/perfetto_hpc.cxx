@@ -5,6 +5,12 @@
 
 #include <fstream>
 
+// TODO
+// * prevent double init / finalize
+// * thread safety
+// * make things configurable via env
+// * keep track of tracing enabled
+
 namespace perfetto_hpc
 {
 
@@ -24,12 +30,24 @@ void initialize()
 
   tracing_session = perfetto::Tracing::NewTrace();
   tracing_session->Setup(cfg);
+
+  start_tracing();
+}
+
+void start_tracing()
+{
   tracing_session->StartBlocking();
+}
+
+void stop_tracing()
+{
+  tracing_session->StopBlocking();
 }
 
 void finalize()
 {
-  tracing_session->StopBlocking();
+  stop_tracing();
+
   std::vector<char> trace_data(tracing_session->ReadTraceBlocking());
 
   std::ofstream output;
