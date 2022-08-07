@@ -1,4 +1,5 @@
 #include "perfetto_hpc_categories.h"
+#include "perfetto_hpc_pmpi.h"
 
 #include <iostream>
 
@@ -20,6 +21,7 @@ void* buffer_f2c(void* buf)
   {
     TRACE_EVENT("mpi", "{{name}}");
     {{callfn}}
+    perfetto_hpc::pmpi::mpi_init_after();
   }
 {{endfn}}
 
@@ -27,6 +29,7 @@ void* buffer_f2c(void* buf)
   {
     TRACE_EVENT("mpi", "{{name}}");
     {{callfn}}
+    perfetto_hpc::pmpi::mpi_init_after();
   }
 {{endfn}}
 

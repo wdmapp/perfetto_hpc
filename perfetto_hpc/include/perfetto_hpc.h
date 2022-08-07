@@ -11,4 +11,6 @@ void stop_tracing();
 void trace_begin(const char* str);
 void trace_end();
 
+extern int mpi_rank;
+
 } // namespace perfetto_hpc

@@ -18,6 +18,8 @@ PERFETTO_TRACK_EVENT_STATIC_STORAGE();
 namespace perfetto_hpc
 {
 
+int mpi_rank = 0;
+
 static std::unique_ptr<perfetto::TracingSession> tracing_session;
 
 void initialize()
@@ -66,7 +68,7 @@ void finalize()
 
   std::cout << "PERFETTO_HPC: writing trace file\n";
   std::ofstream output;
-  output.open("atrace-" + std::to_string(0) + ".perfetto",
+  output.open("atrace-" + std::to_string(mpi_rank) + ".perfetto",
               std::ios::out | std::ios::binary);
   output.write(trace_data.data(), trace_data.size());
   output.close();
