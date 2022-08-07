@@ -11,6 +11,12 @@
 // * make things configurable via env
 // * keep track of tracing enabled
 
+PERFETTO_DEFINE_CATEGORIES(
+  perfetto::Category("perfetto_hpc").SetDescription("Events from perfetto_hpc"),
+  perfetto::Category("app").SetDescription("Events from main application"));
+
+PERFETTO_TRACK_EVENT_STATIC_STORAGE();
+
 namespace perfetto_hpc
 {
 
@@ -21,6 +27,11 @@ void initialize()
   perfetto::TracingInitArgs args;
   args.backends = perfetto::kInProcessBackend;
   perfetto::Tracing::Initialize(args);
+
+  perfetto::TrackEvent::Register();
+  perfetto::protos::gen::TrackEventConfig track_event_cfg;
+  track_event_cfg.add_disabled_categories("");
+  track_event_cfg.add_enabled_categories("*");
 
   perfetto::TraceConfig cfg;
   cfg.add_buffers()->set_size_kb(1024); // Record up to 1 MiB.
@@ -37,10 +48,14 @@ void initialize()
 void start_tracing()
 {
   tracing_session->StartBlocking();
+
+  TRACE_EVENT_BEGIN("perfetto_hpc", "tracing");
 }
 
 void stop_tracing()
 {
+  TRACE_EVENT_END("perfetto_hpc");
+
   tracing_session->StopBlocking();
 }
 
@@ -55,6 +70,16 @@ void finalize()
               std::ios::out | std::ios::binary);
   output.write(trace_data.data(), trace_data.size());
   output.close();
+}
+
+void trace_begin(const char* str)
+{
+  TRACE_EVENT_BEGIN("app", perfetto::DynamicString(str));
+}
+
+void trace_end()
+{
+  TRACE_EVENT_END("app");
 }
 
 } // namespace perfetto_hpc
