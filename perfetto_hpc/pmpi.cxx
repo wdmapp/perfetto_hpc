@@ -15,6 +15,7 @@ void mpi_init_after()
 {
   MPI_Comm_rank(MPI_COMM_WORLD, &::perfetto_hpc::mpi_rank);
   PERFETTO_DLOG("mpi_init_after rank=%d", ::perfetto_hpc::mpi_rank);
+  set_process_name("MPI #" + std::to_string(::perfetto_hpc::mpi_rank));
 }
 
 } // namespace pmpi

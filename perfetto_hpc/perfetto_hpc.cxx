@@ -28,6 +28,7 @@ void initialize()
   perfetto::Tracing::Initialize(args);
 
   perfetto::TrackEvent::Register();
+
   perfetto::protos::gen::TrackEventConfig track_event_cfg;
   track_event_cfg.add_disabled_categories("");
   track_event_cfg.add_enabled_categories("*");
@@ -56,6 +57,7 @@ void stop_tracing()
 {
   TRACE_EVENT_END("perfetto_hpc");
 
+  perfetto::TrackEvent::Flush();
   tracing_session->StopBlocking();
 }
 
@@ -82,6 +84,14 @@ void trace_begin(const char* str)
 void trace_end()
 {
   TRACE_EVENT_END("app");
+}
+
+void set_process_name(const std::string& name)
+{
+  perfetto::ProcessTrack process_track = perfetto::ProcessTrack::Current();
+  perfetto::protos::gen::TrackDescriptor desc = process_track.Serialize();
+  desc.mutable_process()->set_process_name(name);
+  perfetto::TrackEvent::SetTrackDescriptor(process_track, desc);
 }
 
 namespace detail
