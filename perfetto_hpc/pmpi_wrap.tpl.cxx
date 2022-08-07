@@ -3,11 +3,20 @@
 
 #include <iostream>
 
-extern void* mpi_fortran_in_place_;
+static inline bool is_fortran_in_place(void* buf)
+{
+#ifdef MPICH_NAME
+  extern void* MPIR_F_MPI_IN_PLACE;
+  return buf == MPIR_F_MPI_IN_PLACE;
+#else
+  extern void* mpi_fortran_in_place_;
+  return buf == &mpi_fortran_in_place_;
+#endif
+}
 
 void* buffer_f2c(void* buf)
 {
-  if (buf == &mpi_fortran_in_place_) {
+  if (is_fortran_in_place(buf)) {
     return MPI_IN_PLACE;
   } else {
     return buf;
