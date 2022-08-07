@@ -1,8 +1,19 @@
-// clang-format off
-
 #include "perfetto_hpc_categories.h"
 
 #include <iostream>
+
+extern void* mpi_fortran_in_place_;
+
+void* buffer_f2c(void* buf)
+{
+  if (buf == &mpi_fortran_in_place_) {
+    return MPI_IN_PLACE;
+  } else {
+    return buf;
+  }
+}
+
+// clang-format off
 
 // Initialize MPI
 {{fn name MPI_Init}}
