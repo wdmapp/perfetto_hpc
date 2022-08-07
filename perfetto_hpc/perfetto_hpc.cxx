@@ -1,5 +1,6 @@
 
 #include "perfetto_hpc.h"
+#include "perfetto_hpc_categories.h"
 
 #include <perfetto.h>
 
@@ -10,10 +11,6 @@
 // * thread safety
 // * make things configurable via env
 // * keep track of tracing enabled
-
-PERFETTO_DEFINE_CATEGORIES(
-  perfetto::Category("perfetto_hpc").SetDescription("Events from perfetto_hpc"),
-  perfetto::Category("app").SetDescription("Events from main application"));
 
 PERFETTO_TRACK_EVENT_STATIC_STORAGE();
 
