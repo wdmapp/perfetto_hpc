@@ -5,6 +5,7 @@
 #include <perfetto.h>
 
 #include <fstream>
+#include <iostream>
 
 // TODO
 // * prevent double init / finalize
@@ -38,6 +39,7 @@ void initialize()
 
   tracing_session = perfetto::Tracing::NewTrace();
   tracing_session->Setup(cfg);
+  std::cout << "PERFETTO_HPC: initialized\n";
 
   start_tracing();
 }
@@ -62,11 +64,13 @@ void finalize()
 
   std::vector<char> trace_data(tracing_session->ReadTraceBlocking());
 
+  std::cout << "PERFETTO_HPC: writing trace file\n";
   std::ofstream output;
   output.open("atrace-" + std::to_string(0) + ".perfetto",
               std::ios::out | std::ios::binary);
   output.write(trace_data.data(), trace_data.size());
   output.close();
+  std::cout << "PERFETTO_HPC: finalized\n";
 }
 
 void trace_begin(const char* str)
@@ -78,5 +82,18 @@ void trace_end()
 {
   TRACE_EVENT_END("app");
 }
+
+namespace detail
+{
+
+struct InitializerFinalizer
+{
+  InitializerFinalizer() { initialize(); }
+  ~InitializerFinalizer() { finalize(); }
+};
+
+static InitializerFinalizer auto_init_final;
+
+}; // namespace detail
 
 } // namespace perfetto_hpc
