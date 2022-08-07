@@ -1,4 +1,6 @@
 
+#include "perfetto_hpc_hip_api.h"
+
 /*
 Copyright (c) 2015-2016 Advanced Micro Devices, Inc. All rights reserved.
 
@@ -81,7 +83,7 @@ int main()
   int errors;
 
   while (iterations-- > 0) {
-    start_tracing();
+    perfetto_hpc::hip_api::start_tracing();
 
     Matrix = (float*)malloc(NUM * sizeof(float));
     TransposeMatrix = (float*)malloc(NUM * sizeof(float));
@@ -136,7 +138,7 @@ int main()
     free(TransposeMatrix);
     free(cpuTransposeMatrix);
 
-    stop_tracing();
+    perfetto_hpc::hip_api::stop_tracing();
   }
 
   return errors;
@@ -157,51 +159,6 @@ int main()
       abort();                                                                 \
     }                                                                          \
   } while (0)
-
-// HIP API callback function
-void hip_api_callback(uint32_t domain, uint32_t cid, const void* callback_data,
-                      void* arg)
-{
-  (void)arg;
-  const hip_api_data_t* data =
-    reinterpret_cast<const hip_api_data_t*>(callback_data);
-  fprintf(stdout, "<%s id(%u)\tcorrelation_id(%lu) %s> ",
-          roctracer_op_string(ACTIVITY_DOMAIN_HIP_API, cid, 0), cid,
-          data->correlation_id,
-          (data->phase == ACTIVITY_API_PHASE_ENTER) ? "on-enter" : "on-exit");
-  if (data->phase == ACTIVITY_API_PHASE_ENTER) {
-    switch (cid) {
-      case HIP_API_ID_hipMemcpy:
-        fprintf(stdout, "dst(%p) src(%p) size(0x%x) kind(%u)",
-                data->args.hipMemcpy.dst, data->args.hipMemcpy.src,
-                (uint32_t)(data->args.hipMemcpy.sizeBytes),
-                (uint32_t)(data->args.hipMemcpy.kind));
-        break;
-      case HIP_API_ID_hipMalloc:
-        fprintf(stdout, "ptr(%p) size(0x%x)", data->args.hipMalloc.ptr,
-                (uint32_t)(data->args.hipMalloc.size));
-        break;
-      case HIP_API_ID_hipFree:
-        fprintf(stdout, "ptr(%p)", data->args.hipFree.ptr);
-        break;
-      case HIP_API_ID_hipModuleLaunchKernel:
-        fprintf(stdout, "kernel(\"%s\") stream(%p)",
-                hipKernelNameRef(data->args.hipModuleLaunchKernel.f),
-                data->args.hipModuleLaunchKernel.stream);
-        break;
-      default: break;
-    }
-  } else {
-    switch (cid) {
-      case HIP_API_ID_hipMalloc:
-        fprintf(stdout, "*ptr(0x%p)", *(data->args.hipMalloc.ptr));
-        break;
-      default: break;
-    }
-  }
-  fprintf(stdout, "\n");
-  fflush(stdout);
-}
 
 // Activity tracing callback
 //   hipMalloc id(3) correlation_id(1):
@@ -238,18 +195,12 @@ void start_tracing()
   properties.buffer_size = 0x1000;
   properties.buffer_callback_fun = activity_callback;
   ROCTRACER_CALL(roctracer_open_pool(&properties));
-  // Enable API callbacks, all domains
-  ROCTRACER_CALL(roctracer_set_properties(ACTIVITY_DOMAIN_HIP_API, NULL));
-  ROCTRACER_CALL(roctracer_enable_domain_callback(ACTIVITY_DOMAIN_HIP_API,
-                                                  hip_api_callback, NULL));
-  // Enable activity tracing, all domains
   ROCTRACER_CALL(roctracer_enable_domain_activity(ACTIVITY_DOMAIN_HIP_API));
 }
 
 // Stop tracing routine
 void stop_tracing()
 {
-  ROCTRACER_CALL(roctracer_disable_domain_callback(ACTIVITY_DOMAIN_HIP_API));
   ROCTRACER_CALL(roctracer_disable_domain_activity(ACTIVITY_DOMAIN_HIP_API));
   ROCTRACER_CALL(roctracer_close_pool());
   std::cout << "# STOP  #############################" << std::endl

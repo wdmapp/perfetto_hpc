@@ -9,6 +9,11 @@ target_sources(perfetto_hpc PRIVATE pmpi_wrap.cxx pmpi.cxx)
 target_include_directories(perfetto_hpc PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
 target_link_libraries(perfetto_hpc PUBLIC MPI::MPI_CXX MPI::MPI_C MPI::MPI_Fortran)
 
+if (PERFETTO_HPC_ROCTRACER)
+    target_sources(perfetto_hpc PRIVATE hip_api.cxx)
+    target_link_libraries(perfetto_hpc PRIVATE roc::roctracer)
+endif()
+
 set(target "perfetto_hpc")
 
 foreach(property LINK_LIBRARIES;INTERFACE_LINK_LIBRARIES;INTERFACE_INCLUDE_DIRECTORIES)
