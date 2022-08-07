@@ -49,14 +49,10 @@ void initialize()
 void start_tracing()
 {
   tracing_session->StartBlocking();
-
-  TRACE_EVENT_BEGIN("perfetto_hpc", "tracing");
 }
 
 void stop_tracing()
 {
-  TRACE_EVENT_END("perfetto_hpc");
-
   perfetto::TrackEvent::Flush();
   tracing_session->StopBlocking();
 }
