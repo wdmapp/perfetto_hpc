@@ -6,8 +6,6 @@
 namespace perfetto_hpc
 {
 
-void initialize();
-void finalize();
 void start_tracing();
 void stop_tracing();
 void trace_begin(const char* str);
