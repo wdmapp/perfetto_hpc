@@ -1,6 +1,7 @@
 
 #include "perfetto_hpc.h"
 #include "perfetto_hpc_categories.h"
+#include "perfetto_hpc_hip_api.h"
 
 #include <perfetto.h>
 
@@ -28,6 +29,7 @@ void initialize()
   perfetto::Tracing::Initialize(args);
 
   perfetto::TrackEvent::Register();
+  perfetto_hpc::hip_api::start_observer();
 
   perfetto::protos::gen::TrackEventConfig track_event_cfg;
   track_event_cfg.add_disabled_categories("");
@@ -60,6 +62,7 @@ void stop_tracing()
 void finalize()
 {
   stop_tracing();
+  perfetto_hpc::hip_api::stop_observer();
 
   std::vector<char> trace_data(tracing_session->ReadTraceBlocking());
 

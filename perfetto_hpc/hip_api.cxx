@@ -1,4 +1,5 @@
 
+#include "perfetto_hpc_categories.h"
 #include <roctracer_hip.h>
 #include <roctracer_hcc.h>
 
@@ -51,6 +52,8 @@ void hip_api_callback(uint32_t domain, uint32_t cid, const void* callback_data,
         break;
       default: break;
     }
+    TRACE_EVENT_BEGIN("hip_api", perfetto::StaticString(roctracer_op_string(
+                                   ACTIVITY_DOMAIN_HIP_API, cid, 0)));
   } else {
     switch (cid) {
       case HIP_API_ID_hipMalloc:
@@ -58,6 +61,7 @@ void hip_api_callback(uint32_t domain, uint32_t cid, const void* callback_data,
         break;
       default: break;
     }
+    TRACE_EVENT_END("hip_api");
   }
   fprintf(stdout, "\n");
   fflush(stdout);
@@ -73,6 +77,50 @@ void start_tracing()
 void stop_tracing()
 {
   ROCTRACER_CALL(roctracer_disable_domain_callback(ACTIVITY_DOMAIN_HIP_API));
+}
+
+class Observer : public perfetto::TrackEventSessionObserver
+{
+public:
+  Observer() { perfetto::TrackEvent::AddSessionObserver(this); }
+  ~Observer() { perfetto::TrackEvent::RemoveSessionObserver(this); }
+
+  void OnSetup(const perfetto::DataSourceBase::SetupArgs&) override
+  {
+    // Called when tracing session is configured. Note tracing isn't active yet,
+    // so track events emitted here won't be recorded.
+    PERFETTO_LOG("on setup");
+  }
+
+  void OnStart(const perfetto::DataSourceBase::StartArgs&) override
+  {
+    // Called when a tracing session is started. It is possible to emit track
+    // events from this callback.
+    PERFETTO_LOG("on start");
+    start_tracing();
+  }
+
+  void OnStop(const perfetto::DataSourceBase::StopArgs&) override
+  {
+    // Called when a tracing session is stopped. It is still possible to emit
+    // track events from this callback.
+    PERFETTO_LOG("on stop");
+    stop_tracing();
+  }
+};
+
+static std::unique_ptr<perfetto_hpc::hip_api::Observer> observer;
+
+void start_observer()
+{
+  PERFETTO_LOG("start observer");
+  observer.reset(new Observer());
+}
+
+void stop_observer()
+{
+  PERFETTO_LOG("stop observer");
+  observer.reset();
 }
 
 } // namespace hip_api
