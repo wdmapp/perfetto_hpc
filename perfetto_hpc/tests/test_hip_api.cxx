@@ -1,5 +1,5 @@
 
-#include "perfetto_hpc_categories.h"
+#include "perfetto_hpc.h"
 
 /*
 Copyright (c) 2015-2016 Advanced Micro Devices, Inc. All rights reserved.
@@ -83,7 +83,7 @@ int main()
   int errors;
 
   while (iterations-- > 0) {
-    TRACE_EVENT("app", "iteration");
+    perfetto_hpc::trace_begin("iteration");
 
     Matrix = (float*)malloc(NUM * sizeof(float));
     TransposeMatrix = (float*)malloc(NUM * sizeof(float));
@@ -137,6 +137,8 @@ int main()
     free(Matrix);
     free(TransposeMatrix);
     free(cpuTransposeMatrix);
+
+    perfetto_hpc::trace_end();
   }
 
   return errors;

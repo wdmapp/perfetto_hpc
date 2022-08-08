@@ -13,8 +13,6 @@
 // * make things configurable via env
 // * keep track of tracing enabled
 
-PERFETTO_TRACK_EVENT_STATIC_STORAGE();
-
 namespace perfetto_hpc
 {
 
@@ -28,7 +26,7 @@ void initialize()
   args.backends = perfetto::kInProcessBackend;
   perfetto::Tracing::Initialize(args);
 
-  perfetto::TrackEvent::Register();
+  perfetto_hpc::track_event::Register();
   perfetto_hpc::hip_api::start_observer();
 
   perfetto::protos::gen::TrackEventConfig track_event_cfg;
@@ -55,7 +53,7 @@ void start_tracing()
 
 void stop_tracing()
 {
-  perfetto::TrackEvent::Flush();
+  perfetto_hpc::track_event::Flush();
   tracing_session->StopBlocking();
 }
 
@@ -83,14 +81,6 @@ void trace_begin(const char* str)
 void trace_end()
 {
   TRACE_EVENT_END("app");
-}
-
-void set_process_name(const std::string& name)
-{
-  perfetto::ProcessTrack process_track = perfetto::ProcessTrack::Current();
-  perfetto::protos::gen::TrackDescriptor desc = process_track.Serialize();
-  desc.mutable_process()->set_process_name(name);
-  perfetto::TrackEvent::SetTrackDescriptor(process_track, desc);
 }
 
 namespace detail

@@ -1,6 +1,6 @@
 
 add_library(perfetto_hpc STATIC)
-target_sources(perfetto_hpc PRIVATE perfetto_hpc.cxx)
+target_sources(perfetto_hpc PRIVATE perfetto_hpc.cxx track_event.cxx)
 target_include_directories(perfetto_hpc PUBLIC include)
 target_link_libraries(perfetto_hpc PUBLIC perfetto::perfetto)
 
