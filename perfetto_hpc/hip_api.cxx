@@ -26,11 +26,14 @@ void hip_api_callback(uint32_t domain, uint32_t cid, const void* callback_data,
   const hip_api_data_t* data =
     reinterpret_cast<const hip_api_data_t*>(callback_data);
 
+#if 0
   fprintf(stdout, "<%s id(%u)\tcorrelation_id(%lu) %s> ",
           roctracer_op_string(ACTIVITY_DOMAIN_HIP_API, cid, 0), cid,
           data->correlation_id,
           (data->phase == ACTIVITY_API_PHASE_ENTER) ? "on-enter" : "on-exit");
+#endif
   if (data->phase == ACTIVITY_API_PHASE_ENTER) {
+#if 0
     switch (cid) {
       case HIP_API_ID_hipMemcpy:
         fprintf(stdout, "dst(%p) src(%p) size(0x%x) kind(%u)",
@@ -52,19 +55,24 @@ void hip_api_callback(uint32_t domain, uint32_t cid, const void* callback_data,
         break;
       default: break;
     }
+#endif
     TRACE_EVENT_BEGIN("hip_api", perfetto::StaticString(roctracer_op_string(
                                    ACTIVITY_DOMAIN_HIP_API, cid, 0)));
   } else {
+#if 0
     switch (cid) {
       case HIP_API_ID_hipMalloc:
         fprintf(stdout, "*ptr(0x%p)", *(data->args.hipMalloc.ptr));
         break;
       default: break;
     }
+#endif
     TRACE_EVENT_END("hip_api");
   }
+#if 0
   fprintf(stdout, "\n");
   fflush(stdout);
+#endif
 }
 
 void start_tracing()
@@ -89,14 +97,14 @@ public:
   {
     // Called when tracing session is configured. Note tracing isn't active yet,
     // so track events emitted here won't be recorded.
-    PERFETTO_LOG("on setup");
+    PERFETTO_DLOG("on setup");
   }
 
   void OnStart(const perfetto::DataSourceBase::StartArgs&) override
   {
     // Called when a tracing session is started. It is possible to emit track
     // events from this callback.
-    PERFETTO_LOG("on start");
+    PERFETTO_DLOG("on start");
     start_tracing();
   }
 
@@ -104,7 +112,7 @@ public:
   {
     // Called when a tracing session is stopped. It is still possible to emit
     // track events from this callback.
-    PERFETTO_LOG("on stop");
+    PERFETTO_DLOG("on stop");
     stop_tracing();
   }
 };
@@ -113,13 +121,13 @@ static std::unique_ptr<perfetto_hpc::hip_api::Observer> observer;
 
 void start_observer()
 {
-  PERFETTO_LOG("start observer");
+  PERFETTO_DLOG("start observer");
   observer.reset(new Observer());
 }
 
 void stop_observer()
 {
-  PERFETTO_LOG("stop observer");
+  PERFETTO_DLOG("stop observer");
   observer.reset();
 }
 
