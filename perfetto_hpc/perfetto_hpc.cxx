@@ -1,7 +1,9 @@
 
 #include "perfetto_hpc.h"
 #include "perfetto_hpc_categories.h"
+#ifdef PERFETTO_HPC_ROCTRACER
 #include "perfetto_hpc_hip_api.h"
+#endif
 
 #include <perfetto.h>
 
@@ -27,7 +29,9 @@ void initialize()
   perfetto::Tracing::Initialize(args);
 
   perfetto_hpc::track_event::Register();
+#ifdef PERFETTO_HPC_ROCTRACER
   perfetto_hpc::hip_api::start_observer();
+#endif
 
   perfetto::protos::gen::TrackEventConfig track_event_cfg;
   track_event_cfg.add_disabled_categories("");
@@ -60,7 +64,9 @@ void stop_tracing()
 void finalize()
 {
   stop_tracing();
+#ifdef PERFETTO_HPC_ROCTRACER
   perfetto_hpc::hip_api::stop_observer();
+#endif
 
   std::vector<char> trace_data(tracing_session->ReadTraceBlocking());
 
